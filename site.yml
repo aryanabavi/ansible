@@ -1,0 +1,42 @@
+---
+
+- hosts: all
+  become: true
+  pre_tasks:
+
+  - name: install updates (RedHat)
+    yum:
+      update_only: yes
+      update_cache: yes
+    when: ansible_distribution == "RedHat"
+
+- hosts: web_servers
+  become: true
+  tasks:
+
+  - name: install apache and php packages for RedHat
+    package:
+      name:
+        - httpd
+        - php
+      state: latest 
+      update_cache: yes  
+
+- hosts: db_servers
+  become: true
+  tasks:
+
+  - name: install mariadb package (RedHat)
+    yum:
+      name: mariadb-server
+      state: latest
+    when: ansible_distribution == "RedHat"
+
+- hosts: file_servers
+  become: true
+  tasks:
+
+  - name: install samba package
+    package:
+      name: samba
+      state: latest

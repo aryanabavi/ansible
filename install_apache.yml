@@ -4,20 +4,12 @@
   become: true
   tasks:
 
-  - name: update repository index
-    yum:
-      update_cache: yes
-    when: ansible_distribution == "RedHat"
+  - name: install apache and php packages for RedHat
+    package:
+      name:
+        - "{{ apache_package }}"
+        - "{{ php_package }}"
+      state: latest 
+      update_cache: yes  
 
-  - name: install httpd package
-    yum:
-      name: httpd
-      state: latest  
-    when: ansible_distribution == "RedHat"
-
-  - name: isntall php package
-    yum:
-      name: php
-      state: latest
-    when: ansible_distribution == "RedHat"
 
