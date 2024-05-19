@@ -4,29 +4,70 @@
   become: true
   pre_tasks:
 
-  - name: install updates (RedHat)
+  - name: update repo cache (RedHat)
+    tags: always
     yum:
-      update_only: yes
       update_cache: yes
+    changed_when: false
     when: ansible_distribution == "RedHat"
+
+- hosts: all
+  become: true
+  tasks:
+
+
+  - name: add ssh key for steve
+    tags: always
+    authorized_key:
+      user: steve 
+      key: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIBNntSAKD8rDv2TucoUEDp/+hyHen/fNpDTXKj0VAJCO ansible"
+
+
 
 - hosts: web_servers
   become: true
   tasks:
 
   - name: install apache and php packages for RedHat
+    tags: apache, redhat, httpd
     package:
       name:
         - httpd
         - php
       state: latest 
-      update_cache: yes  
+      update_cache: yes 
+
+  - name: start httpd (RedHat)
+    tags: apache, redhat, httpd
+    service:
+      name: httpd
+      state: started
+      enabled: yes
+    when: ansible_distribution == "RedHat"  
+
+  - name: change email address for admin
+    tags: apache, redhat, httpd
+    lineinfile: 
+      path: /etc/httpd/conf/httpd.conf
+      regexp: '^ServerAdmin'
+      line: ServerAdmin somebody@somewhere.net
+    when: ansible_distribution == "RedHat"
+    register: httpd
+
+  - name: restart httpd (RedHat)
+    tags: apache, redhat, httpd
+    service:
+      name: httpd
+      state: restarted
+    when: httpd.changed
+
 
 - hosts: db_servers
   become: true
   tasks:
 
   - name: install mariadb package (RedHat)
+    tags: redhat, db, mariadb
     yum:
       name: mariadb-server
       state: latest
@@ -37,6 +78,8 @@
   tasks:
 
   - name: install samba package
+    tags: samba
     package:
       name: samba
       state: latest
+

@@ -1,0 +1,40 @@
+---
+
+- hosts: all
+  become: true
+  pre_tasks:
+
+  - name: install updates (RedHat)
+    tags: always
+    yum:
+      update_only: yes
+      update_cache: yes
+    when: ansible_distribution == "RedHat"
+
+- hosts: all
+  become: true
+  tasks:
+
+  - name: create steve user
+    tags: always
+    user:
+      name: steve
+      groups: root
+
+  - name: add ssh key for steve
+    tags: always
+    authorized_key:
+      user: steve 
+      key: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIBNntSAKD8rDv2TucoUEDp/+hyHen/fNpDTXKj0VAJCO ansible"
+
+  - name: add sudoers file for steve
+    tags: always
+    copy:
+      src: sudoer_steve
+      dest: /etc/sudoers.d/steve
+      owner: root
+      group: root
+      mode: 0440
+
+
+
